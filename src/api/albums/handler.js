@@ -12,13 +12,13 @@ class AlbumsHandler {
     this._validator.validateAlbumPayload(request.payload);
     const { name = 'untitled', year } = request.payload;
 
-    const noteId = await this._service.addAlbum({ name, year });
+    const albumId = await this._service.addAlbum({ name, year });
 
     const response = h.response({
       status: 'success',
       message: 'Album berhasil ditambahkan',
       data: {
-        noteId,
+        albumId,
       },
     });
 
