@@ -3,6 +3,7 @@ require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const { registerPreResponseServerExtension } = require('./serverExtensions');
 const albums = require('./api/albums');
+const songs = require('./api/songs');
 
 const init = async () => {
   const server = Hapi.server({
@@ -15,7 +16,7 @@ const init = async () => {
     },
   });
 
-  await server.register([albums.plugin]);
+  await server.register([albums.plugin, songs.plugin]);
 
   registerPreResponseServerExtension(server);
 
