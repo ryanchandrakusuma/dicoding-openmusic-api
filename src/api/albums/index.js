@@ -1,4 +1,4 @@
-const AlbumsService = require('../../services/inMemory/AlbumsService');
+const AlbumsService = require('../../services/postgres/AlbumsService');
 const AlbumsValidator = require('../../validator/albums');
 const AlbumsHandler = require('./handler');
 const routes = require('./routes');
