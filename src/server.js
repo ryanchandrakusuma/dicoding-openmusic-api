@@ -15,9 +15,7 @@ const init = async () => {
     },
   });
 
-  await server.register({
-    plugin: [albums.plugin],
-  });
+  await server.register([albums.plugin]);
 
   registerPreResponseServerExtension(server);
 
