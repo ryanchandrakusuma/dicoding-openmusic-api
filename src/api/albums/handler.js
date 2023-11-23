@@ -53,6 +53,19 @@ class AlbumsHandler {
     response.code(200);
     return response;
   }
+
+  async deleteAlbumByIdHandler(request, h) {
+    const { id } = request.params;
+    await this._service.deleteAlbumById(id, request.payload);
+
+    const response = h.response({
+      status: 'success',
+      message: `${id} berhasil didelete`,
+    });
+
+    response.code(200);
+    return response;
+  }
 }
 
 module.exports = AlbumsHandler;
