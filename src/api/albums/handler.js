@@ -25,6 +25,20 @@ class AlbumsHandler {
     response.code(201);
     return response;
   }
+
+  async getAlbumByIdHandler(request, h) {
+    const { id } = request.params;
+    const album = await this._service.getAlbumById(id);
+    const response = h.response({
+      status: 'success',
+      data: {
+        album,
+      },
+    });
+
+    response.code(200);
+    return response;
+  }
 }
 
 module.exports = AlbumsHandler;
