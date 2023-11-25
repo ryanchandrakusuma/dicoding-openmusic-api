@@ -19,15 +19,10 @@ class SongsService {
     const updatedAt = createdAt;
     const deletedAt = null;
 
-    if (albumId === undefined) {
-      // eslint-disable-next-line no-param-reassign
-      albumId = null;
-    }
-
     const query = {
       text: 'INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
       values: [
-        id, title, year, genre, performer, duration, albumId,
+        id, title, year, genre, performer, duration, albumId || null,
         createdAt, updatedAt, deletedAt],
     };
 
@@ -40,9 +35,10 @@ class SongsService {
     return result.rows[0].id;
   }
 
-  async getSongs() {
+  async getSongs({ title, performer }) {
     const query = {
-      text: 'SELECT id, title, performer FROM songs WHERE deleted_at IS null',
+      text: 'SELECT id, title, performer FROM songs WHERE deleted_at IS null AND title ILIKE $1 AND performer ILIKE $2',
+      values: [`%${title || ''}%`, `%${performer || ''}%`],
     };
 
     const result = await this._pool.query(query);
