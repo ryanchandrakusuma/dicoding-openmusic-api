@@ -56,7 +56,7 @@ class AlbumsHandler {
 
   async deleteAlbumByIdHandler(request, h) {
     const { id } = request.params;
-    await this._service.deleteAlbumById(id, request.payload);
+    await this._service.deleteAlbumById(id);
 
     const response = h.response({
       status: 'success',
