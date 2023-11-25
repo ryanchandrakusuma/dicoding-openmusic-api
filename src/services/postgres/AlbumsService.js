@@ -4,6 +4,7 @@ const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const { mapDBToModel } = require('../../utils');
 const AlbumModel = require('../../models/AlbumModel');
+const SongModel = require('../../models/SongModel');
 
 class AlbumsService {
   constructor() {
@@ -44,6 +45,11 @@ class AlbumsService {
 
     const albumData = result.rows[0];
     const albumInstance = mapDBToModel(AlbumModel, albumData);
+
+    const songs = await this.getSongsByAlbumId(id);
+
+    albumInstance.songs = songs.map((songData) => mapDBToModel(SongModel, songData));
+
     return albumInstance;
   }
 
@@ -74,6 +80,16 @@ class AlbumsService {
     if (!result.rows.length) {
       throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan');
     }
+  }
+
+  async getSongsByAlbumId(albumId) {
+    const query = {
+      text: 'SELECT id, title, performer FROM songs WHERE album_id = $1 AND deleted_at IS null',
+      values: [albumId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows;
   }
 }
 
