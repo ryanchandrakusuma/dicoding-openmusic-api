@@ -12,7 +12,6 @@ class AlbumsService {
   }
 
   async addAlbum({ name, year }) {
-    console.log('adding album');
     const id = `album-${nanoid(16)}`;
     const createdAt = new Date().toISOString();
     const updatedAt = createdAt;
@@ -59,7 +58,6 @@ class AlbumsService {
       text: 'UPDATE albums SET name = $1, year = $2, updated_at = $3 WHERE id = $4 RETURNING id',
       values: [name, year, updatedAt, id],
     };
-    console.log(query);
 
     const result = await this._pool.query(query);
 
