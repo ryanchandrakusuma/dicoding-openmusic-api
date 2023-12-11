@@ -4,6 +4,8 @@ const Hapi = require('@hapi/hapi');
 const { registerPreResponseServerExtension } = require('./serverExtensions');
 const albums = require('./api/albums');
 const songs = require('./api/songs');
+const users = require('./api/users');
+const authentications = require('./api/authentications');
 
 const init = async () => {
   const server = Hapi.server({
@@ -16,7 +18,12 @@ const init = async () => {
     },
   });
 
-  await server.register([albums.plugin, songs.plugin]);
+  await server.register([
+    albums.plugin,
+    songs.plugin,
+    users.plugin,
+    authentications.plugin,
+  ]);
 
   registerPreResponseServerExtension(server);
 
