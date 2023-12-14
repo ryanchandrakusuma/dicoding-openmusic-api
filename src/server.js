@@ -1,11 +1,19 @@
 require('dotenv').config();
 
+// package
 const Hapi = require('@hapi/hapi');
-const { registerPreResponseServerExtension } = require('./serverExtensions');
+
+// plugin
 const albums = require('./api/albums');
 const songs = require('./api/songs');
 const users = require('./api/users');
+const collaborations = require('./api/collaborations');
+const playlists = require('./api/playlists');
 const authentications = require('./api/authentications');
+
+// function
+const { registerPreResponseServerExtension } = require('./serverExtensions');
+const { registerServerStrategy } = require('./serverStrategy');
 
 const init = async () => {
   const server = Hapi.server({
@@ -18,11 +26,15 @@ const init = async () => {
     },
   });
 
+  await registerServerStrategy(server);
+
   await server.register([
     albums.plugin,
     songs.plugin,
     users.plugin,
     authentications.plugin,
+    collaborations.plugin,
+    playlists.plugin,
   ]);
 
   registerPreResponseServerExtension(server);
