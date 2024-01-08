@@ -56,12 +56,12 @@ class SongsService {
     const result = await this._pool.query(query);
 
     if (!result.rows.length) {
-      throw new NotFoundError('Album tidak ditemukan');
+      throw new NotFoundError('Song tidak ditemukan');
     }
 
-    const albumData = result.rows[0];
-    const albumInstance = mapDBToModel(SongModel, albumData);
-    return albumInstance;
+    const songData = result.rows[0];
+    const songInstance = mapDBToModel(SongModel, songData);
+    return songInstance;
   }
 
   async editSongById({
