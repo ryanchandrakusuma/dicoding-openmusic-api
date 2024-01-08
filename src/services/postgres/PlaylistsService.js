@@ -50,6 +50,22 @@ class PlaylistsService {
     return plistInstances;
   }
 
+  async addSongToPlaylist(playlistId, songId) {
+    const id = `playlist_track-${nanoid(16)}`;
+    const query = {
+      text: 'INSERT INTO playlist_tracks VALUES ($1, $2, $3) RETURNING id',
+      values: [id, playlistId, songId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows[0].id) {
+      throw new InvariantError('Song gagal ditambahkan ke playlist');
+    }
+
+    return result.rows[0].id;
+  }
+
   async verifyOwner(id, owner) {
     const query = {
       text: 'SELECT * FROM playlists WHERE id = $1',
@@ -71,7 +87,7 @@ class PlaylistsService {
 
   async verifyAccess(playlistId, userId) {
     await this.verifyOwner(playlistId, userId);
-    await this._collaborationService.verifyCollaborator(playlistId, userId);
+    // await this._collaborationService.verifyCollaborator(playlistId, userId);
   }
 }
 
