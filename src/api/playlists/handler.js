@@ -39,7 +39,6 @@ class PlaylistsHandler {
     const { songId } = request.payload;
 
     const song = await this._songsService.getSongById(songId);
-    console.log(song.id);
 
     const playlistId = await this._service.addSongToPlaylist(id, song.id);
 
@@ -58,6 +57,21 @@ class PlaylistsHandler {
       status: 'success',
       data: {
         playlists,
+      },
+    };
+  }
+
+  async getPlaylistWithSongsHandler(request) {
+    const { id } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+    await this._service.verifyAccess(id, credentialId);
+
+    const playlist = await this._service.getPlaylistById(id, credentialId);
+
+    return {
+      status: 'success',
+      data: {
+        playlist,
       },
     };
   }

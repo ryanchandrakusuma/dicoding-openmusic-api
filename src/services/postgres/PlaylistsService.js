@@ -5,6 +5,7 @@ const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
 const PlaylistModel = require('../../models/PlaylistModel');
+const SongModel = require('../../models/SongModel');
 
 class PlaylistsService {
   constructor(collaborationsService) {
@@ -48,6 +49,33 @@ class PlaylistsService {
     const plistInstances = result.rows.map((plistData) => mapDBToModel(PlaylistModel, plistData));
 
     return plistInstances;
+  }
+
+  async getPlaylistById(id, owner) {
+    const query = {
+      text: 'SELECT playlists.id, playlists.name, users.username FROM playlists JOIN users ON users.id = playlists.owner WHERE playlists.owner = $1 AND playlists.id = $2',
+      values: [owner, id],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Playlist tidak ditemukan');
+    }
+
+    const playlistData = result.rows[0];
+    const playlistInstance = mapDBToModel(PlaylistModel, playlistData);
+
+    const songsQuery = {
+      text: 'SELECT s.id, s.title, s.performer FROM playlist_tracks AS p_tracks JOIN songs AS s ON s.id = p_tracks.song_id WHERE p_tracks.playlist_id = $1',
+      values: [result.rows[0].id],
+    };
+
+    const songsResult = await this._pool.query(songsQuery);
+
+    playlistInstance.songs = songsResult.rows.map((songData) => mapDBToModel(SongModel, songData));
+
+    return playlistInstance;
   }
 
   async addSongToPlaylist(playlistId, songId) {
