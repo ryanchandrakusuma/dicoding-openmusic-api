@@ -75,6 +75,25 @@ class PlaylistsHandler {
       },
     };
   }
+
+  async deleteSongInPlaylistHandler(request, h) {
+    const { id: playlistId } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+    await this._service.verifyAccess(playlistId, credentialId);
+
+    this._playlistTracksValidator.validatePlaylistTrackPayload(request.payload);
+
+    const { songId } = request.payload;
+    await this._service.deleteSongInPlaylistById(playlistId, songId);
+
+    const response = h.response({
+      status: 'success',
+      message: `${songId} dari ${playlistId} berhasil didelete`,
+    });
+
+    response.code(200);
+    return response;
+  }
 }
 
 module.exports = PlaylistsHandler;
