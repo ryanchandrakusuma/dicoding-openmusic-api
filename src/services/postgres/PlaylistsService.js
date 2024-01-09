@@ -36,7 +36,7 @@ class PlaylistsService {
 
   async getPlaylists(owner) {
     const query = {
-      text: 'SELECT playlists.id, playlists.name, users.username FROM playlists JOIN users ON users.id = playlists.owner WHERE playlists.owner = $1',
+      text: 'SELECT playlists.id, playlists.name, users.username FROM playlists JOIN users ON users.id = playlists.owner WHERE playlists.owner = $1 AND deleted_at IS null',
       values: [owner],
     };
 
@@ -53,7 +53,7 @@ class PlaylistsService {
 
   async getPlaylistById(id, owner) {
     const query = {
-      text: 'SELECT playlists.id, playlists.name, users.username FROM playlists JOIN users ON users.id = playlists.owner WHERE playlists.owner = $1 AND playlists.id = $2',
+      text: 'SELECT playlists.id, playlists.name, users.username FROM playlists JOIN users ON users.id = playlists.owner WHERE playlists.owner = $1 AND playlists.id = $2 AND playlists.deleted_at IS null',
       values: [owner, id],
     };
 
@@ -104,6 +104,20 @@ class PlaylistsService {
 
     if (!result.rows.length) {
       throw new NotFoundError('Song gagal dihapus. Id tidak ditemukan');
+    }
+  }
+
+  async deletePlaylistById(playlistId) {
+    const deletedAt = new Date().toISOString();
+    const query = {
+      text: 'UPDATE playlists SET deleted_at = $1 WHERE id = $2 RETURNING id',
+      values: [deletedAt, playlistId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Playlist gagal dihapus. Id tidak ditemukan');
     }
   }
 
