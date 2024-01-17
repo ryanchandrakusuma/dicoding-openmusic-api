@@ -36,25 +36,21 @@ class PlaylistsService {
 
   async getPlaylists(owner) {
     const query = {
-      text: 'SELECT playlists.id, playlists.name, users.username FROM playlists JOIN users ON users.id = playlists.owner WHERE playlists.owner = $1 AND deleted_at IS null',
+      text: 'SELECT playlists.id, playlists.name, users.username FROM playlists JOIN users ON users.id = playlists.owner LEFT JOIN collaborations AS c ON c.playlist_id = playlists.id WHERE (playlists.owner = $1 OR c.user_id = $1) AND deleted_at IS null',
       values: [owner],
     };
 
     const result = await this._pool.query(query);
-
-    if (!result.rows.length) {
-      throw new NotFoundError('Playlist tidak ditemukan');
-    }
 
     const plistInstances = result.rows.map((plistData) => mapDBToModel(PlaylistModel, plistData));
 
     return plistInstances;
   }
 
-  async getPlaylistById(id, owner) {
+  async getPlaylistById(id) {
     const query = {
-      text: 'SELECT playlists.id, playlists.name, users.username FROM playlists JOIN users ON users.id = playlists.owner WHERE playlists.owner = $1 AND playlists.id = $2 AND playlists.deleted_at IS null',
-      values: [owner, id],
+      text: 'SELECT playlists.id, playlists.name, users.username FROM playlists JOIN users ON users.id = playlists.owner WHERE playlists.id = $1 AND playlists.deleted_at IS null',
+      values: [id],
     };
 
     const result = await this._pool.query(query);
