@@ -6,6 +6,8 @@ const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
 const PlaylistModel = require('../../models/PlaylistModel');
 const SongModel = require('../../models/SongModel');
+const PlaylistActivitiesModel = require('../../models/PlaylistActivitiesModel');
+const ActivitiesModel = require('../../models/ActivitiesModel');
 
 class PlaylistsService {
   constructor(collaborationsService) {
@@ -72,6 +74,49 @@ class PlaylistsService {
     playlistInstance.songs = songsResult.rows.map((songData) => mapDBToModel(SongModel, songData));
 
     return playlistInstance;
+  }
+
+  async getPlaylistActivities(id) {
+    const query = {
+      text: 'SELECT id FROM playlists WHERE id = $1 AND deleted_at IS null',
+      values: [id],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Playlist tidak ditemukan');
+    }
+
+    const playlistData = result.rows[0];
+    const pAInstance = mapDBToModel(PlaylistActivitiesModel, playlistData);
+
+    const activitiesQuery = {
+      text: 'SELECT u.username, s.title, psa.action, psa.time FROM playlist_song_activities AS psa JOIN users AS u ON u.id = psa.user_id JOIN songs AS s ON psa.song_id = s.id JOIN playlists AS p ON p.id = psa.playlist_id WHERE psa.playlist_id = $1 AND p.deleted_at IS null',
+      values: [result.rows[0].id],
+    };
+
+    const actResult = await this._pool.query(activitiesQuery);
+
+    pAInstance.activities = actResult.rows.map((actData) => mapDBToModel(ActivitiesModel, actData));
+
+    return pAInstance;
+  }
+
+  async addActivity(userId, playlistId, songId, action) {
+    const id = `playlist_song_activities-${nanoid(16)}`;
+    const currentTimestamp = new Date().toISOString();
+
+    const query = {
+      text: 'INSERT INTO playlist_song_activities VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      values: [id, playlistId, songId, userId, action, currentTimestamp],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows[0].id) {
+      throw new InvariantError('Activity gagal ditambahkan');
+    }
   }
 
   async addSongToPlaylist(playlistId, songId) {
